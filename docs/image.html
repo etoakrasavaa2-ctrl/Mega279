@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Генерация картинки</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.disableVerticalSwipes();
+        
+        document.body.style.overflow = 'hidden';
+        const container = document.querySelector('.container');
+        if (container) {
+          container.style.overflowY = 'auto';
+          container.style.webkitOverflowScrolling = 'touch';
+        }
+      }
+    })();
+  </script>
+
+  <!-- ТЕМА -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      document.documentElement.setAttribute("data-theme", getTheme());
+    })();
+  </script>
+
+  <!-- ПЛАТФОРМА -->
+  <script>
+    (function(){
+      const KEY = "miniapp_platform_v1";
+      function getPlatform(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("platform");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "ios"; }catch(e){ return "ios"; }
+      }
+      const platform = getPlatform();
+      if (platform === 'android') {
+        document.documentElement.classList.add('android-mode');
+      }
+    })();
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0b0f18;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    :root[data-theme="blue"] { 
+      --bg-top: #27384b;
+      --bg-mid: #1d2b3a;
+      --bg-bot: #16212d;
+      --accent1: #5aaeff;
+      --accent2: #3496ff;
+      --text: #f7fbff;
+      --subtext: rgba(247, 251, 255, 0.68);
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.08);
+      --btn-bg: rgba(90, 174, 255, 0.2);
+      --star-color: #ffffff;
+      --header-text: #f7fbff;
+      --caret-color: #ffffff;
+    }
+    
+    :root[data-theme="black"] { 
+      --bg-top: #1b2430;
+      --bg-mid: #141b24;
+      --bg-bot: #0e141c;
+      --accent1: #8bb8ff;
+      --accent2: #5a98ff;
+      --text: #f7fbff;
+      --subtext: rgba(247, 251, 255, 0.68);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.06);
+      --btn-bg: rgba(139, 184, 255, 0.15);
+      --star-color: #ffffff;
+      --header-text: #f7fbff;
+      --caret-color: #ffffff;
+    }
+    
+    :root[data-theme="light"] { 
+      --bg-top: #e8edf5;
+      --bg-mid: #d9e0eb;
+      --bg-bot: #cad1de;
+      --accent1: #3a8cff;
+      --accent2: #1a6cff;
+      --text: #2c3e50;
+      --subtext: #4a5a6a;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(0, 0, 0, 0.1);
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --btn-bg: rgba(58, 140, 255, 0.1);
+      --star-color: #2c3e50;
+      --header-text: #2c3e50;
+      --caret-color: #3a8cff;
+    }
+
+    body {
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
+      background-attachment: fixed;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: transparent;
+      backdrop-filter: none;
+      height: 60px;
+    }
+
+    .back-btn {
+      color: var(--header-text);
+      text-decoration: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--header-text);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin: 0 12px;
+    }
+
+    .spacer { width: 40px; }
+
+    .container {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 24px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 30px;
+      padding: 2px;
+      background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: snakeMove 3s linear infinite;
+      background-size: 300% 100%;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    @keyframes snakeMove {
+      0% { background-position: 0% 0; }
+      100% { background-position: 300% 0; }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-icon { font-size: 32px; }
+    .card-title { font-size: 22px; font-weight: 700; color: var(--text); }
+
+    .star-badge {
+      font-size: 16px;
+      color: var(--star-color);
+      background: rgba(255,215,0,0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,215,0,0.3);
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--subtext);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .input-group { margin-bottom: 20px; }
+    .input-label { font-size: 14px; color: var(--subtext); margin-bottom: 8px; display: block; }
+    .input-wrapper { display: flex; align-items: center; gap: 8px; }
+
+    .text-input {
+      flex: 1;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 16px;
+      transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      caret-color: var(--caret-color);
+    }
+
+    .text-input:focus { outline: none; border-color: var(--accent1); }
+    .text-input::placeholder { color: var(--subtext); opacity: 0.7; }
+
+    .clear-input {
+      background: var(--btn-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      width: 50px;
+      height: 50px;
+      border-radius: 20px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .size-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .size-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .size-btn.active {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      color: white;
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 18px;
+      border-radius: 24px;
+      border: none;
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+    }
+
+    .generate-btn:active { transform: scale(0.98); }
+
+    .result { display: none; margin-top: 20px; }
+    .result-image {
+      width: 100%;
+      border-radius: 24px;
+      background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .action-buttons { display: flex; gap: 12px; }
+    .action-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      border: none;
+      color: white;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent1);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text { color: white; font-size: 18px; font-weight: 600; }
+
+    html.android-mode .card::before { display: none !important; }
+    html.android-mode .header { background: transparent !important; backdrop-filter: none !important; }
+    html.android-mode .back-btn, html.android-mode .title { background: transparent !important; backdrop-filter: none !important; border: none !important; }
+    html.android-mode .card { backdrop-filter: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="./index.html" class="back-btn">←</a>
+    <div class="title" id="title">Генерация картинки</div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title-wrapper">
+          <span class="card-icon">🖋️</span>
+          <span class="card-title" id="cardTitle">Свободный промпт</span>
+        </div>
+        <span class="star-badge">10⭐</span>
+      </div>
+      
+      <div class="card-desc" id="cardDesc">Напиши что хочешь увидеть — ИИ нарисует в любом стиле</div>
+
+      <div class="input-group">
+        <label class="input-label" id="promptLabel">Твой промпт</label>
+        <div class="input-wrapper">
+          <input type="text" class="text-input" id="promptInput" placeholder="например: красивый закат в горах">
+          <button class="clear-input" id="clearInputBtn" title="Очистить">✕</button>
+        </div>
+      </div>
+
+      <!-- ТОЛЬКО 1:1 -->
+      <div class="size-selector">
+        <button class="size-btn active" data-size="1024x1024" id="sizeSquare">1:1</button>
+      </div>
+
+      <button class="generate-btn" id="generateBtn">
+        <span>✨</span>
+        <span id="generateText">Сгенерировать</span>
+      </button>
+
+      <div class="result" id="result">
+        <img class="result-image" id="resultImg" src="">
+        <div class="action-buttons">
+          <button class="action-btn" id="saveBtn"><span>💾</span><span id="saveText">Сохранить</span></button>
+          <button class="action-btn primary" id="repeatBtn"><span>🔄</span><span id="repeatText">Повторить</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Генерация...</div>
+  </div>
+
+  <script>
+    const API_BASE = "https://fartidhd-production.up.railway.app";
+    const COST = 10;
+
+    const I18N = {
+      ru: {
+        title: "Генерация картинки",
+        cardTitle: "Свободный промпт",
+        cardDesc: "Напиши что хочешь увидеть — ИИ нарисует в любом стиле",
+        promptLabel: "Твой промпт",
+        promptPlaceholder: "например: красивый закат в горах",
+        sizeSquare: "1:1",
+        generate: "Сгенерировать",
+        save: "Сохранить",
+        repeat: "Повторить",
+        loading: "Генерация...",
+        sending: "📤 Отправка в бота...",
+        clear: "Очистить",
+        insufficientStars: "❌ Недостаточно звезд. Нужно 10⭐",
+        error: "Ошибка генерации",
+        saved: "✅ Отправлено в бота"
+      },
+      en: {
+        title: "Image generation",
+        cardTitle: "Free prompt",
+        cardDesc: "Write what you want to see — AI will draw in any style",
+        promptLabel: "Your prompt",
+        promptPlaceholder: "e.g.: beautiful sunset in mountains",
+        sizeSquare: "1:1",
+        generate: "Generate",
+        save: "Save",
+        repeat: "Repeat",
+        loading: "Generating...",
+        sending: "📤 Sending to bot...",
+        clear: "Clear",
+        insufficientStars: "❌ Insufficient stars. Need 10⭐",
+        error: "Generation error",
+        saved: "✅ Sent to bot"
+      }
+    };
+
+    function getLang() {
+      const url = new URL(window.location.href);
+      const urlLang = url.searchParams.get("lang");
+      if (urlLang) {
+        try { localStorage.setItem("miniapp_lang_v1", urlLang); } catch(e) {}
+        return urlLang;
+      }
+      try { 
+        const stored = localStorage.getItem("miniapp_lang_v1");
+        if (stored) return stored;
+      } catch(e) {}
+      return "ru";
+    }
+
+    function updateLanguage() {
+      const lang = getLang();
+      const t = I18N[lang] || I18N.ru;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('cardTitle').textContent = t.cardTitle;
+      document.getElementById('cardDesc').textContent = t.cardDesc;
+      document.getElementById('promptLabel').textContent = t.promptLabel;
+      document.getElementById('promptInput').placeholder = t.promptPlaceholder;
+      document.getElementById('sizeSquare').textContent = t.sizeSquare;
+      document.getElementById('generateText').textContent = t.generate;
+      document.getElementById('saveText').textContent = t.save;
+      document.getElementById('repeatText').textContent = t.repeat;
+      document.getElementById('loadingText').textContent = t.loading;
+      document.getElementById('clearInputBtn').title = t.clear;
+    }
+
+    document.addEventListener('DOMContentLoaded', updateLanguage);
+    window.addEventListener('languageChanged', updateLanguage);
+
+    // Закрытие клавиатуры при тапе вне поля ввода
+    document.addEventListener('click', function(e) {
+      const promptInput = document.getElementById('promptInput');
+      if (promptInput && promptInput !== e.target && !promptInput.contains(e.target)) {
+        promptInput.blur();
+      }
+    });
+
+    function getUser() {
+      const tg = window.Telegram?.WebApp;
+      if (!tg || !tg.initDataUnsafe?.user) return null;
+      return tg.initDataUnsafe.user;
+    }
+
+    async function generateImage(prompt) {
+      const user = getUser();
+      if (!user) {
+        alert("Ошибка: не удалось получить данные пользователя");
+        return null;
+      }
+      const t = I18N[getLang()] || I18N.ru;
+      document.getElementById('loadingText').textContent = t.loading;
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      try {
+        const formData = new FormData();
+        formData.append('tg_user_id', user.id);
+        formData.append('tg_username', user.username || '');
+        formData.append('tg_first_name', user.first_name || '');
+        formData.append('prompt', prompt);
+        formData.append('mode', 'txt2img');
+        formData.append('width', '1024');
+        formData.append('height', '1024');
+        
+        const response = await fetch(`${API_BASE}/api/image`, { method: 'POST', body: formData });
+        const data = await response.json();
+        
+        if (!response.ok) {
+          if (data.error === 'insufficient_stars') {
+            alert(t.insufficientStars);
+          } else {
+            throw new Error(data.message || 'Ошибка генерации');
+          }
+          return null;
+        }
+        
+        return data.image_base64;
+      } catch (error) {
+        console.error("Generation error:", error);
+        alert(t.error + ': ' + error.message);
+        return null;
+      } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+      }
+    }
+
+    async function sendToBot(imageBase64) {
+      const t = I18N[getLang()] || I18N.ru;
+      const user = getUser();
+      if (!user) {
+        alert("Ошибка: пользователь не найден");
+        return;
+      }
+      try {
+        document.getElementById('loadingText').textContent = t.sending;
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        
+        // Прямо из base64 создаём blob, без лишнего fetch
+        const base64Data = imageBase64.split(',')[1];
+        const binaryData = atob(base64Data);
+        const bytes = new Uint8Array(binaryData.length);
+        for (let i = 0; i < binaryData.length; i++) {
+          bytes[i] = binaryData.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'image/png' });
+        
+        const formData = new FormData();
+        formData.append('user_id', user.id);
+        formData.append('image', blob, `image_${Date.now()}.png`);
+        formData.append('filename', `image_${Date.now()}.png`);
+        
+        const response = await fetch(`${API_BASE}/api/send-photo`, { method: 'POST', body: formData });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          alert(t.saved);
+        } else {
+          alert("Ошибка при отправке в бота");
+        }
+      } catch (e) {
+        console.error("Send to bot error:", e);
+        alert("Ошибка при отправке в бота");
+      } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+      }
+    }
+
+    const promptInput = document.getElementById('promptInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const result = document.getElementById('result');
+    const resultImg = document.getElementById('resultImg');
+    const saveBtn = document.getElementById('saveBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const clearInputBtn = document.getElementById('clearInputBtn');
+    let currentImageBase64 = null;
+
+    clearInputBtn.addEventListener('click', () => {
+      promptInput.value = '';
+      promptInput.focus();
+    });
+
+    generateBtn.addEventListener('click', async () => {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        alert('Введите промпт');
+        return;
+      }
+      const fullPrompt = `${prompt}, high quality, detailed, 8k, masterpiece`;
+      const imageBase64 = await generateImage(fullPrompt);
+      if (imageBase64) {
+        currentImageBase64 = imageBase64;
+        resultImg.src = imageBase64;
+        result.style.display = 'block';
+        generateBtn.style.display = 'none';
+      }
+    });
+
+    saveBtn.addEventListener('click', () => {
+      if (currentImageBase64) {
+        sendToBot(currentImageBase64);
+      }
+    });
+
+    repeatBtn.addEventListener('click', () => {
+      result.style.display = 'none';
+      generateBtn.style.display = 'flex';
+    });
+  </script>
+</body>
+</html>

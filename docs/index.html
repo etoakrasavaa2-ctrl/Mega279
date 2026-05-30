@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>💫 NextAI</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.disableVerticalSwipes();
+        
+        const setHeight = () => {
+          const vh = tg.viewportHeight || window.innerHeight;
+          document.documentElement.style.setProperty('--vh', vh + 'px');
+        };
+        
+        setHeight();
+        tg.onEvent('viewportChanged', setHeight);
+      } else {
+        const setHeight = () => {
+          document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+        };
+        setHeight();
+        window.addEventListener('resize', setHeight);
+      }
+    })();
+  </script>
+
+  <!-- ТЕМА -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      document.documentElement.setAttribute("data-theme", getTheme());
+    })();
+  </script>
+
+  <!-- Запрет зума -->
+  <script>
+    (function(){
+      document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive:false });
+      document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive:false });
+      document.addEventListener("gestureend", (e) => e.preventDefault(), { passive:false });
+
+      let lastTouchEnd = 0;
+      document.addEventListener("touchend", (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+      }, { passive:false });
+
+      document.addEventListener("dblclick", (e) => e.preventDefault(), { passive:false });
+    })();
+  </script>
+
+  <style>
+    /* ПОЛНОЭКРАННЫЕ СТИЛИ */
+    :root {
+      --vh: 100vh;
+    }
+    
+    html, body {
+      height: var(--vh);
+      height: -webkit-fill-available;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+    
+    body {
+      position: relative;
+      background: transparent;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      font-weight: 800 !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
+      -webkit-text-stroke: 0.3px rgba(255,255,255,0.1);
+    }
+    
+    .wrap {
+      height: var(--vh);
+      height: -webkit-fill-available;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .card {
+      width: min(520px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Кнопки */
+    .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 16px 16px;
+      border-radius: 20px;
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 18%, white 8%) 0%, rgba(255,255,255,.08) 100%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      box-shadow: 0 10px 22px rgba(0,0,0,.14), 0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(.995);
+    }
+
+    .btn:hover {
+      border-color: color-mix(in srgb, var(--accent1) 35%, rgba(255,255,255,.18));
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 22%, white 10%) 0%, rgba(255,255,255,.10) 100%);
+    }
+
+    .sub {
+      margin-top: 16px;
+      text-align: center;
+      color: var(--subtext);
+      font-size: 14px;
+    }
+
+    .ver {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.5;
+      color: var(--subtext);
+    }
+
+    /* БЛОК ЯЗЫКА */
+    .langBlock {
+      margin-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, .10);
+      padding-top: 12px;
+    }
+
+    .langTitle {
+      font-size: 13px;
+      color: var(--subtext);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .langPill {
+      width: 100%;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, .10);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--text);
+      outline: none;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .chev {
+      opacity: .8;
+    }
+
+    /* БЛОК ПЛАТФОРМЫ */
+    .platformBlock {
+      margin-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, .10);
+      padding-top: 12px;
+    }
+
+    .platformTitle {
+      font-size: 13px;
+      color: var(--subtext);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .platformPill {
+      width: 100%;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, .10);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--text);
+      outline: none;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    /* КНОПКА ТЕМЫ */
+    .themePill {
+      position: fixed;
+      top: calc(10px + env(safe-area-inset-top));
+      left: 10px;
+      z-index: 10000;
+      padding: 10px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 16%, white 8%) 0%, rgba(255,255,255,.08) 100%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+      color: var(--text);
+      backdrop-filter: blur(12px) saturate(115%);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    /* Светлая тема */
+    :root[data-theme="light"] .btn,
+    :root[data-theme="light"] .langPill,
+    :root[data-theme="light"] .platformPill,
+    :root[data-theme="light"] .themePill {
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid #c0c0c0;
+      color: #3a4a5a;
+    }
+
+    :root[data-theme="light"] .sub,
+    :root[data-theme="light"] .ver,
+    :root[data-theme="light"] .langTitle,
+    :root[data-theme="light"] .platformTitle {
+      color: #5a6a7a;
+    }
+
+    /* Android */
+    html.android-mode .btn,
+    html.android-mode .langPill,
+    html.android-mode .platformPill,
+    html.android-mode .themePill {
+      backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+
+    html.android-mode[data-theme="light"] .btn,
+    html.android-mode[data-theme="light"] .langPill,
+    html.android-mode[data-theme="light"] .platformPill,
+    html.android-mode[data-theme="light"] .themePill {
+      background: rgba(255,255,255,0.8) !important;
+      border: 1.5px solid #c0c0c0 !important;
+      color: #3a4a5a !important;
+    }
+
+    /* КУБИКИ */
+    .cube {
+      position: absolute;
+      width: 108px;
+      height: 108px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--accent1) 18%, white 10%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 42%, white 20%);
+      backdrop-filter: blur(8px) saturate(120%);
+      pointer-events: none;
+      opacity: .72;
+    }
+    .cube.small { width: 56px; height: 56px; opacity: .52; }
+    .cube.tiny { width: 30px; height: 30px; opacity: .38; }
+    .f1 { animation: drift1 14s ease-in-out infinite; }
+    .f2 { animation: drift2 16s ease-in-out infinite; }
+    .f3 { animation: drift3 15s ease-in-out infinite; }
+    .f4 { animation: drift4 17s ease-in-out infinite; }
+    .f5 { animation: drift5 13s ease-in-out infinite; }
+    .f6 { animation: drift6 18s ease-in-out infinite; }
+
+    @keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(12px,-14px)} }
+    @keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-14px,-10px)} }
+    @keyframes drift3{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,12px)} }
+    @keyframes drift4{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,14px)} }
+    @keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(8px,-10px)} }
+    @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-8px,10px)} }
+
+    html.android-mode .cube { display: none !important; }
+  </style>
+
+  <link rel="stylesheet" href="./css/base.css?v=3">
+  <link rel="stylesheet" href="./css/index.css?v=6">
+</head>
+<body>
+
+  <button class="themePill" id="themeBtn" type="button">
+    <span id="themeBtnText">Цвет: Синий</span> <span class="chev">▾</span>
+  </button>
+
+  <!-- КУБИКИ -->
+  <div class="cube f1" style="left:5%; top:8%"></div>
+  <div class="cube small f2" style="left:15%; top:25%"></div>
+  <div class="cube tiny f3" style="left:25%; top:12%"></div>
+  <div class="cube f4" style="left:35%; top:40%"></div>
+  <div class="cube small f5" style="left:45%; top:18%"></div>
+  <div class="cube tiny f6" style="left:55%; top:65%"></div>
+  <div class="cube f1" style="left:65%; top:30%"></div>
+  <div class="cube small f2" style="left:75%; top:55%"></div>
+  <div class="cube tiny f3" style="left:85%; top:15%"></div>
+  <div class="cube f4" style="left:92%; top:75%"></div>
+  <div class="cube f5" style="left:8%; top:70%"></div>
+  <div class="cube small f6" style="left:18%; top:85%"></div>
+  <div class="cube tiny f1" style="left:28%; top:50%"></div>
+  <div class="cube f2" style="left:38%; top:92%"></div>
+  <div class="cube small f3" style="left:48%; top:5%"></div>
+  <div class="cube tiny f4" style="left:58%; top:45%"></div>
+  <div class="cube f5" style="left:68%; top:88%"></div>
+  <div class="cube small f6" style="left:78%; top:72%"></div>
+  <div class="cube tiny f1" style="left:88%; top:35%"></div>
+  <div class="cube f2" style="left:95%; top:60%"></div>
+
+  <div class="wrap">
+    <div class="card">
+      <button class="btn" id="chatBtn" onclick="openPage('chat.html')">💬 Чат с ИИ</button>
+      <button class="btn" id="imgBtn" onclick="openPage('image.html')">🎨 Генерация картинки</button>
+
+      <div class="sub" id="subText">Быстрые ответы • Память • Заметки</div>
+      <div class="ver" id="verText">miniapp v3</div>
+
+      <div class="langBlock">
+        <div class="langTitle" id="langTitle">Язык интерфейса</div>
+        <button class="langPill" id="langBtn" type="button">
+          <span id="langBtnText">Русский (RU)</span> <span class="chev">▾</span>
+        </button>
+      </div>
+
+      <div class="platformBlock">
+        <div class="platformTitle" id="platformTitle">Режим</div>
+        <button class="platformPill" id="platformBtn" type="button">
+          <span id="platformBtnText">iOS</span> <span class="chev">▾</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Оверлей языков -->
+  <div class="langOverlay" id="langOverlay">
+    <div class="langSheet">
+      <div class="langSheetHeader">
+        <div class="langSheetTitle" id="langSheetTitle">Язык</div>
+        <button class="langClose" id="langClose" type="button">✕</button>
+      </div>
+      <div class="langList" id="langList"></div>
+    </div>
+  </div>
+
+  <!-- Оверлей темы -->
+  <div class="themeOverlay" id="themeOverlay">
+    <div class="themeSheet">
+      <div class="themeSheetHeader">
+        <div class="themeSheetTitle" id="themeSheetTitle">Цвет</div>
+        <button class="themeClose" id="themeClose" type="button">✕</button>
+      </div>
+      <div class="themeList" id="themeList"></div>
+    </div>
+  </div>
+
+  <!-- Оверлей платформы -->
+  <div class="platformOverlay" id="platformOverlay">
+    <div class="platformSheet">
+      <div class="platformSheetHeader">
+        <div class="platformSheetTitle" id="platformSheetTitle">Режим</div>
+        <button class="platformClose" id="platformClose" type="button">✕</button>
+      </div>
+      <div class="platformList" id="platformList"></div>
+    </div>
+  </div>
+
+  <script>
+    function openPage(page) {
+      const lang = getSavedLang();
+      const theme = getSavedTheme();
+      const platform = getSavedPlatform();
+      const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+      const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&platform=${encodeURIComponent(platform)}`;
+      window.location.href = fullUrl;
+    }
+
+    function getSavedLang() {
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
+      catch(e) { return "ru"; }
+    }
+
+    function getSavedTheme() {
+      try { return localStorage.getItem("miniapp_theme_v1") || "blue"; } 
+      catch(e) { return "blue"; }
+    }
+
+    function getSavedPlatform() {
+      try { return localStorage.getItem("miniapp_platform_v1") || "ios"; } 
+      catch(e) { return "ios"; }
+    }
+
+    const I18N = {
+      ru: { platform: "Режим" },
+      kk: { platform: "Режим" },
+      en: { platform: "Mode" },
+      tr: { platform: "Mod" },
+      uk: { platform: "Режим" },
+      fr: { platform: "Mode" }
+    };
+
+    function updatePlatformTitle() {
+      const lang = getSavedLang();
+      const t = I18N[lang] || I18N.ru;
+      const platformTitle = document.getElementById('platformTitle');
+      if (platformTitle) platformTitle.textContent = t.platform;
+    }
+
+    document.addEventListener('DOMContentLoaded', updatePlatformTitle);
+    window.addEventListener('languageChanged', updatePlatformTitle);
+  </script>
+
+  <script type="module" src="./js/index.js?v=7"></script>
+</body>
+</html>
