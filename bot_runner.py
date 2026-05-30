@@ -1,0 +1,195 @@
+import os
+import time
+import asyncio
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, BotCommandScopeChat, BotCommand
+from telegram.error import Conflict, TimedOut, NetworkError
+
+from bot.handlers import start, on_button
+from bot.handlers import handle_message
+from bot.support import handle_support_command
+from bot_admin import (
+    cmd_whoami,
+    cmd_free,
+    cmd_paid,
+    cmd_block,
+    cmd_unblock,
+    cmd_status,
+    cmd_addstars,
+    cmd_balance,
+    cmd_starstrans,
+    cmd_resetstars,
+)
+
+BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
+SUPPORT_GROUP_ID = int(os.getenv("SUPPORT_GROUP_ID", "0"))
+LOG_GROUP_ID = int(os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0")
+
+# Список админ-команд
+ADMIN_COMMANDS = [
+    BotCommand("whoami", "👤 Проверка админа"),
+    BotCommand("free", "⭐ Сделать бесплатным"),
+    BotCommand("paid", "💰 Сделать платным"),
+    BotCommand("block", "⛔ Заблокировать"),
+    BotCommand("unblock", "✅ Разблокировать"),
+    BotCommand("status", "ℹ️ Статус"),
+    BotCommand("addstars", "✨ Добавить звезды"),
+    BotCommand("balance", "💎 Баланс"),
+    BotCommand("starstrans", "🏆 Топ звезд"),
+    BotCommand("resetstars", "🔄 Сброс баланса"),
+]
+
+
+async def setup_commands_for_chat(chat_id: int, bot):
+    """Установить админ-команды для конкретного чата"""
+    try:
+        await bot.set_my_commands(
+            ADMIN_COMMANDS,
+            scope=BotCommandScopeChat(chat_id=chat_id)
+        )
+        print(f"✅ Админ-команды установлены для чата {chat_id}")
+        return True
+    except Exception as e:
+        print(f"⚠️ Ошибка установки команд для чата {chat_id}: {e}")
+        return False
+
+
+async def post_init(app: Application):
+    """Инициализация после запуска"""
+    # 1️⃣ Устанавливаем ТОЛЬКО /start глобально для всех
+    try:
+        await app.bot.set_my_commands([
+            ("start", "🚀 Запустить бота"),
+        ])
+        print("✅ Глобальная команда /start установлена")
+    except Exception as e:
+        print(f"⚠️ Ошибка установки /start: {e}")
+    
+    # 2️⃣ Устанавливаем админ-команды для группы логов
+    if LOG_GROUP_ID:
+        await setup_commands_for_chat(LOG_GROUP_ID, app.bot)
+    
+    # 3️⃣ Устанавливаем админ-команды для группы поддержки
+    if SUPPORT_GROUP_ID and SUPPORT_GROUP_ID != LOG_GROUP_ID:
+        await setup_commands_for_chat(SUPPORT_GROUP_ID, app.bot)
+
+
+async def handle_new_chat_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Когда бота добавляют в новый чат"""
+    if not update.message or not update.message.new_chat_members:
+        return
+    
+    for member in update.message.new_chat_members:
+        if member.id == context.bot.id:
+            chat_id = update.effective_chat.id
+            print(f"🤖 Бот добавлен в чат {chat_id}")
+            
+            # Проверяем, является ли этот чат группой логов или поддержки
+            if chat_id == LOG_GROUP_ID or chat_id == SUPPORT_GROUP_ID:
+                success = await setup_commands_for_chat(chat_id, context.bot)
+                if success:
+                    await update.message.reply_text(
+                        "✅ Бот активирован в этой группе.\n"
+                        "Доступны все админ-команды.\n\n"
+                        "Список команд:\n"
+                        "/whoami - проверка админа\n"
+                        "/free <id> - сделать бесплатным\n"
+                        "/paid <id> - сделать платным\n"
+                        "/block <id> - заблокировать\n"
+                        "/unblock <id> - разблокировать\n"
+                        "/status <id> - статус\n"
+                        "/addstars <id> <кол-во> - добавить звезды\n"
+                        "/balance <id> - баланс\n"
+                        "/starstrans - топ звезд\n"
+                        "/resetstars <id> - сброс баланса"
+                    )
+            break
+
+
+async def error_handler(update: Update, context):
+    """Обработчик ошибок"""
+    try:
+        if update and update.effective_user:
+            user_id = update.effective_user.id
+            print(f"❌ Ошибка для пользователя {user_id}: {context.error}")
+            
+            if "Conflict" in str(context.error):
+                print("🔄 Обнаружен конфликт, игнорируем...")
+            elif "Timed out" in str(context.error) or "ReadTimeout" in str(context.error):
+                print("🔄 Таймаут, но продолжаем работу...")
+        else:
+            print(f"❌ Ошибка: {context.error}")
+    except Exception as e:
+        print(f"❌ Критическая ошибка в обработчике: {e}")
+
+
+def start_bot():
+    """Запуск бота"""
+    if not BOT_TOKEN:
+        raise RuntimeError("BOT_TOKEN is not set")
+
+    # Создаем приложение
+    app = (
+        Application.builder()
+        .token(BOT_TOKEN)
+        .connect_timeout(30)
+        .read_timeout(30)
+        .write_timeout(30)
+        .pool_timeout(30)
+        .build()
+    )
+
+    # Добавляем обработчики команд
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("whoami", cmd_whoami))
+    app.add_handler(CommandHandler("free", cmd_free))
+    app.add_handler(CommandHandler("paid", cmd_paid))
+    app.add_handler(CommandHandler("block", cmd_block))
+    app.add_handler(CommandHandler("unblock", cmd_unblock))
+    app.add_handler(CommandHandler("status", cmd_status))
+    app.add_handler(CommandHandler("addstars", cmd_addstars))
+    app.add_handler(CommandHandler("balance", cmd_balance))
+    app.add_handler(CommandHandler("starstrans", cmd_starstrans))
+    app.add_handler(CommandHandler("resetstars", cmd_resetstars))
+    
+    app.add_handler(CallbackQueryHandler(on_button))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
+    # Обработчик для команд в группе поддержки
+    if SUPPORT_GROUP_ID:
+        app.add_handler(MessageHandler(
+            filters.Chat(SUPPORT_GROUP_ID) & filters.COMMAND, 
+            handle_support_command
+        ))
+    
+    # ✅ Обработчик добавления бота в новый чат
+    app.add_handler(MessageHandler(
+        filters.StatusUpdate.NEW_CHAT_MEMBERS,
+        handle_new_chat_member
+    ))
+    
+    app.add_error_handler(error_handler)
+    
+    # Устанавливаем команды после запуска
+    app.post_init = post_init
+
+    print("🤖 Telegram bot started")
+    print(f"✅ В личке: только /start")
+    print(f"✅ В группе логов ({LOG_GROUP_ID}): все админ-команды")
+    if SUPPORT_GROUP_ID:
+        print(f"✅ В группе поддержки ({SUPPORT_GROUP_ID}): все админ-команды")
+
+    # Запускаем polling
+    try:
+        print("🔄 Запуск polling...")
+        app.run_polling(
+            stop_signals=None,
+            close_loop=False,
+            drop_pending_updates=True,
+            allowed_updates=['message', 'callback_query'],
+            poll_interval=1.0,
+            timeout=30
+        )
+    except Exception as e:
+        print(f"❌ Ошибка polling: {e}")
+        print("🔄 Бот остановлен")
