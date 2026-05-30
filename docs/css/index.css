@@ -1,0 +1,776 @@
+:root {
+  --vh: 100vh;
+
+  --bgTop: #27384b;
+  --bgMid: #1d2b3a;
+  --bgBot: #16212d;
+
+  --accent1: #5aaeff;
+  --accent2: #3496ff;
+
+  --text: #f7fbff;
+  --subtext: rgba(247, 251, 255, 0.68);
+  
+  /* Панели выбора */
+  --sheet-bg: rgba(24, 31, 40, .97);
+  --sheet-border: rgba(255, 255, 255, .10);
+  --sheet-text: #f7fbff;
+}
+
+/* Черная тема */
+:root[data-theme="black"]{
+  --bgTop:#1b2430;
+  --bgMid:#141b24;
+  --bgBot:#0e141c;
+  --accent1:#8bb8ff;
+  --accent2:#5a98ff;
+  --subtext: rgba(247, 251, 255, 0.68);
+  --sheet-bg: rgba(24, 31, 40, .97);
+  --sheet-border: rgba(255, 255, 255, .10);
+  --sheet-text: #f7fbff;
+}
+
+/* Синяя тема - кнопки стали светлее */
+:root[data-theme="blue"]{
+  --bgTop:#27384b;
+  --bgMid:#1d2b3a;
+  --bgBot:#16212d;
+  --accent1: #6bb5ff;  /* Светлее (было #5aaeff) */
+  --accent2: #4aa3ff;  /* Светлее (было #3496ff) */
+  --text:#f7fbff;
+  --subtext: rgba(247, 251, 255, 0.68);
+  --sheet-bg: rgba(39, 56, 75, 0.95);
+  --sheet-border: rgba(90, 174, 255, 0.3);
+  --sheet-text: #f7fbff;
+}
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+:root[data-theme="light"]{
+  --bgTop:#e8edf5;
+  --bgMid:#d9e0eb;
+  --bgBot:#cad1de;
+  --accent1:#3a8cff;
+  --accent2:#1a6cff;
+  
+  /* 📝 ТЕКСТ — сделал чуть светлее (было #2c3e50) */
+  --text-primary: #3a4a5a;      /* ← УМЕНЬШИЛ КОНТРАСТ (было #2c3e50) */
+  --text-secondary: #5a6a7a;     /* ← УМЕНЬШИЛ КОНТРАСТ (было #4a5a6a) */
+  
+  /* Панели */
+  --sheet-bg: rgba(255, 255, 255, 0.85);
+  --sheet-border: rgba(0, 0, 0, 0.1);
+  --sheet-text: var(--text-primary);
+  
+  /* 🔘 СЕРАЯ ОБВОДКА */
+  --btn-border: #c0c0c0;
+  --btn-border-width: 1.5px;
+  --btn-bg: rgba(255, 255, 255, 0.4);
+  --btn-blur: blur(12px);
+}
+
+/* ========================= */
+/* ANDROID MODE */
+/* ========================= */
+html.android-mode .cube {
+  display: none !important;
+}
+
+html.android-mode .card,
+html.android-mode .btn,
+html.android-mode .tools-btn,
+html.android-mode .tool-item,
+html.android-mode .langPill,
+html.android-mode .themePill,
+html.android-mode .platformPill {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.android-mode[data-theme="light"] .btn,
+html.android-mode[data-theme="light"] .tools-btn,
+html.android-mode[data-theme="light"] .tool-item,
+html.android-mode[data-theme="light"] .langPill,
+html.android-mode[data-theme="light"] .themePill,
+html.android-mode[data-theme="light"] .platformPill {
+  border: var(--btn-border-width) solid var(--btn-border) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: var(--text-primary) !important;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  position: relative;
+  background: transparent;
+  background-color: var(--bgBot);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: var(--vh);
+  overflow: hidden;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 48%, var(--bgBot) 100%);
+  background-repeat: no-repeat;
+  background-color: var(--bgBot);
+  filter: none;
+}
+
+body > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ========================= */
+/* КУБИКИ */
+/* ========================= */
+.cube {
+  position: absolute;
+  width: 108px;
+  height: 108px;
+  border-radius: 18px;
+
+  background: color-mix(in srgb, var(--accent1) 18%, white 10%);
+  border: 1px solid color-mix(in srgb, var(--accent1) 42%, white 20%);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.08),
+    0 0 18px color-mix(in srgb, var(--accent1) 22%, transparent);
+  pointer-events: none;
+  opacity: .72;
+}
+
+.cube.small {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  opacity: .52;
+}
+
+.cube.tiny {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  opacity: .38;
+}
+
+/* анимации */
+.f1 { animation: drift1 14s ease-in-out infinite; }
+.f2 { animation: drift2 16s ease-in-out infinite; }
+.f3 { animation: drift3 15s ease-in-out infinite; }
+.f4 { animation: drift4 17s ease-in-out infinite; }
+.f5 { animation: drift5 13s ease-in-out infinite; }
+.f6 { animation: drift6 18s ease-in-out infinite; }
+
+@keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(12px,-14px)} }
+@keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-14px,-10px)} }
+@keyframes drift3{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,12px)} }
+@keyframes drift4{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,14px)} }
+@keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(8px,-10px)} }
+@keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-8px,10px)} }
+
+/* ========================= */
+/* ОСНОВНОЙ КОНТЕЙНЕР - ИСПРАВЛЕНО */
+/* ========================= */
+.wrap {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px 24px;
+  padding-top: calc(70px + env(safe-area-inset-top));
+  z-index: 10;
+  overflow-y: auto;
+}
+
+/* ========================= */
+/* КАРТОЧКА МЕНЮ - ИСПРАВЛЕНО */
+/* ========================= */
+.card {
+  width: min(520px, 100%);
+  padding: 20px 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .12);
+  backdrop-filter: blur(12px) saturate(118%);
+  -webkit-backdrop-filter: blur(12px) saturate(118%);
+  box-shadow: 0 18px 42px rgba(0,0,0,.28);
+  margin-bottom: 20px;
+}
+
+/* ========================= */
+/* КНОПКИ */
+/* ========================= */
+.btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 16px 16px;
+  border-radius: 20px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text);
+  text-decoration: none;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 18%, white 8%) 0%,
+      rgba(255,255,255,.08) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+  backdrop-filter: blur(12px) saturate(115%);
+  -webkit-backdrop-filter: blur(12px) saturate(115%);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,.14),
+    0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+/* Светлая тема - кнопки */
+:root[data-theme="light"] .btn {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.btn:active {
+  transform: scale(.995);
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.18),
+    0 0 18px color-mix(in srgb, var(--accent1) 20%, transparent);
+}
+
+.btn:hover {
+  border-color: color-mix(in srgb, var(--accent1) 35%, rgba(255,255,255,.18));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 22%, white 10%) 0%,
+      rgba(255,255,255,.10) 100%
+    );
+}
+
+/* Светлая тема - hover для кнопок */
+:root[data-theme="light"] .btn:hover {
+  border-color: var(--accent1);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================= */
+/* КНОПКА ИНСТРУМЕНТОВ */
+/* ========================= */
+.tools-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 0 !important;
+}
+
+.tools-btn.active {
+  border-color: var(--accent1) !important;
+  background: rgba(255,255,255,0.15) !important;
+}
+
+/* Светлая тема - кнопка инструментов */
+:root[data-theme="light"] .tools-btn {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
+}
+
+:root[data-theme="light"] .tools-btn.active {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: var(--accent1) !important;
+}
+
+/* Выпадающий список */
+.tools-dropdown {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0;
+  border-radius: 16px;
+}
+
+.tools-dropdown.open {
+  max-height: 500px;
+  opacity: 1;
+  margin: 12px 0 8px 0;
+}
+
+/* Элементы инструментов */
+.tool-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  margin: 6px 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 16px;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(0,0,0,.14);
+}
+
+/* Светлая тема - элементы инструментов */
+:root[data-theme="light"] .tool-item {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tool-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--accent1);
+  transform: translateX(6px);
+}
+
+/* Светлая тема - hover для элементов инструментов */
+:root[data-theme="light"] .tool-item:hover {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--accent1);
+}
+
+.tool-icon {
+  font-size: 26px;
+  min-width: 48px;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.tool-text {
+  flex: 1;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.3px;
+}
+
+.tool-arrow {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+/* Светлая тема - стрелка */
+:root[data-theme="light"] .tool-arrow {
+  color: var(--text-secondary);
+}
+
+.tool-item:hover .tool-arrow {
+  color: var(--accent1);
+  transform: translateX(3px);
+}
+
+/* ========================= */
+/* ТЕКСТЫ */
+/* ========================= */
+.sub {
+  margin-top: 16px;
+  text-align: center;
+  color: var(--subtext);
+  font-size: 14px;
+}
+
+/* Светлая тема - тексты */
+:root[data-theme="light"] .sub {
+  color: var(--text-secondary);
+}
+
+.ver {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.5;
+  color: var(--subtext);
+}
+
+:root[data-theme="light"] .ver {
+  color: var(--text-secondary);
+}
+
+/* ========================= */
+/* БЛОК ЯЗЫКА */
+/* ========================= */
+.langBlock {
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, .10);
+  padding-top: 12px;
+}
+
+/* Светлая тема - разделитель */
+:root[data-theme="light"] .langBlock {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.langTitle {
+  font-size: 13px;
+  color: var(--subtext);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+:root[data-theme="light"] .langTitle {
+  color: var(--text-secondary);
+}
+
+.langPill {
+  width: 100%;
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: var(--text);
+  outline: none;
+  backdrop-filter: blur(12px) saturate(115%);
+  -webkit-backdrop-filter: blur(12px) saturate(115%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Светлая тема - кнопка языка */
+:root[data-theme="light"] .langPill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.langPill:hover {
+  background: rgba(255, 255, 255, .13);
+  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
+}
+
+.langPill:active {
+  transform: scale(.995);
+}
+
+.chev {
+  opacity: .8;
+}
+
+/* ========================= */
+/* БЛОК ПЛАТФОРМЫ */
+/* ========================= */
+.platformBlock {
+  margin-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, .10);
+  padding-top: 12px;
+}
+
+/* Светлая тема - разделитель */
+:root[data-theme="light"] .platformBlock {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.platformTitle {
+  font-size: 13px;
+  color: var(--subtext);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+:root[data-theme="light"] .platformTitle {
+  color: var(--text-secondary);
+}
+
+.platformPill {
+  width: 100%;
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: var(--text);
+  outline: none;
+  backdrop-filter: blur(12px) saturate(115%);
+  -webkit-backdrop-filter: blur(12px) saturate(115%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Светлая тема - кнопка платформы */
+:root[data-theme="light"] .platformPill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.platformPill:hover {
+  background: rgba(255, 255, 255, .13);
+  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
+}
+
+.platformPill:active {
+  transform: scale(.995);
+}
+
+/* ========================= */
+/* КНОПКА ТЕМЫ */
+/* ========================= */
+.themePill {
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top));
+  left: 10px;
+  z-index: 10000;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 16%, white 8%) 0%,
+      rgba(255,255,255,.08) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+  color: var(--text);
+  backdrop-filter: blur(12px) saturate(115%);
+  -webkit-backdrop-filter: blur(12px) saturate(115%);
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.12),
+    0 0 12px color-mix(in srgb, var(--accent1) 14%, transparent);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Светлая тема - кнопка темы */
+:root[data-theme="light"] .themePill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.themePill:hover {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 20%, white 10%) 0%,
+      rgba(255,255,255,.11) 100%
+    );
+  border-color: color-mix(in srgb, var(--accent1) 30%, rgba(255,255,255,.18));
+}
+
+.themePill:active {
+  transform: scale(.985);
+}
+
+/* ========================= */
+/* BOTTOM SHEETS - ИСПРАВЛЕНО */
+/* ========================= */
+.langOverlay, .themeOverlay, .platformOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,.34);
+  display: none;
+}
+
+.langOverlay.show, .themeOverlay.show, .platformOverlay.show {
+  display: block !important;
+}
+
+.langSheet, .themeSheet, .platformSheet {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  border-radius: 18px;
+  background: var(--sheet-bg);
+  border: 1.5px solid var(--sheet-border);
+  backdrop-filter: blur(16px) saturate(118%);
+  -webkit-backdrop-filter: blur(16px) saturate(118%);
+  box-shadow: 0 20px 44px rgba(0,0,0,.32);
+  overflow: hidden;
+  transform: translateY(110%);
+  opacity: 0;
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+}
+
+.langOverlay.show .langSheet,
+.themeOverlay.show .themeSheet,
+.platformOverlay.show .platformSheet {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.langSheetHeader, .themeSheetHeader, .platformSheetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-bottom: 1.5px solid var(--sheet-border);
+}
+
+.langSheetTitle, .themeSheetTitle, .platformSheetTitle {
+  font-weight: 800;
+  color: var(--sheet-text);
+}
+
+.langClose, .themeClose, .platformClose {
+  border: 0;
+  background: rgba(255, 255, 255, .08);
+  color: var(--sheet-text);
+  border: 1.5px solid var(--sheet-border);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.langClose:hover, .themeClose:hover, .platformClose:hover {
+  background: rgba(255, 255, 255, .11);
+  border-color: var(--accent1);
+}
+
+.langList, .themeList, .platformList {
+  max-height: 40vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.langItem, .themeItem, .platformItem {
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  border: 0;
+  border-bottom: 1.5px solid var(--sheet-border);
+  background: transparent;
+  color: var(--sheet-text);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Последний элемент без нижней границы */
+.langItem:last-child, .themeItem:last-child, .platformItem:last-child {
+  border-bottom: none;
+}
+
+.langItem:hover, .themeItem:hover, .platformItem:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+.langItem .check, .themeItem .check, .platformItem .check {
+  opacity: 0;
+  transform: scale(.9);
+  transition: .15s ease;
+  color: var(--accent1);
+}
+
+.langItem.selected .check,
+.themeItem.selected .check,
+.platformItem.selected .check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ========================= */
+/* TOAST УВЕДОМЛЕНИЯ */
+/* ========================= */
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--sheet-bg);
+  border: 1.5px solid var(--sheet-border);
+  border-radius: 24px;
+  padding: 12px 20px;
+  color: var(--sheet-text);
+  font-weight: 600;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.26);
+  z-index: 100000;
+  animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -12px);
+  }
+}

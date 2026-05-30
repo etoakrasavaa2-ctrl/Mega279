@@ -1,0 +1,85 @@
+:root{
+  --vh: 100vh;
+  --bgTop:#27384b;
+  --bgMid:#1d2b3a;
+  --bgBot:#16212d;
+  --accent1:#5aaeff;
+  --accent2:#3496ff;
+  --text:#f7fbff;
+  --user-bg: rgba(90, 174, 255, 0.28);
+  --user-border: rgba(90, 174, 255, 0.34);
+}
+
+/* Черная тема */
+:root[data-theme="black"]{
+  --bgTop:#1b2430;
+  --bgMid:#141b24;
+  --bgBot:#0e141c;
+  --accent1:#8bb8ff;
+  --accent2:#5a98ff;
+  --text:#f7fbff;
+  --user-bg: rgba(139, 184, 255, 0.25);
+  --user-border: rgba(139, 184, 255, 0.30);
+}
+
+/* Светлая тема */
+:root[data-theme="light"]{
+  --bgTop:#e8edf5;
+  --bgMid:#d9e0eb;
+  --bgBot:#cad1de;
+  --accent1:#3a8cff;
+  --accent2:#1a6cff;
+  --text:#1a2634;
+  --user-bg: rgba(58, 140, 255, 0.12);
+  --user-border: rgba(58, 140, 255, 0.20);
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+}
+
+/* защита от вспышек */
+html{
+  background: var(--bgBot);
+}
+
+body{
+  position: relative;
+  background: transparent;
+  background-color: var(--bgBot);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: var(--vh);
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* основной фон */
+body::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 48%, var(--bgBot) 100%);
+  background-repeat: no-repeat;
+  background-color: var(--bgBot);
+  filter: none;
+}
+
+/* контент поверх */
+body > *{
+  position: relative;
+  z-index: 2;
+}
